@@ -1,0 +1,85 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-02-12T18:17:40Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: 822bf7dd73fd4b79a1f23cecf5ec280c
+      template: 'Template - Discovery Servicos Systemd'
+      name: 'Template - Discovery Servicos Systemd'
+      groups:
+        -
+          name: Templates
+      discovery_rules:
+        -
+          uuid: c910ec017fda4a2da411f54ee64e9c37
+          name: 'Descoberta Servicos Systemd'
+          type: ZABBIX_ACTIVE
+          key: 'discovery.systemd.dados[JSON]'
+          delay: '3600'
+          filter:
+            conditions:
+              -
+                macro: '{#SYSTEMDNAME}'
+                value: (kdump|systemd-readahead-drop|irqbalance|dbus-org.freedesktop.nm-dispatcher|NetworkManager-dispatcher|zabbix-agent|wpa_supplicant|dbus-fi.w1.wpa_supplicant1)
+                operator: NOT_MATCHES_REGEX
+                formulaid: A
+          lifetime: 0d
+          item_prototypes:
+            -
+              uuid: 78372045bc584a4f8af2b6f205f107d2
+              name: 'Servico - {#SYSTEMDNAME}'
+              type: ZABBIX_ACTIVE
+              key: 'discovery.systemd.dados[STATUS {#SYSTEMDNAME}]'
+              delay: 5m
+              history: 1d
+              trends: 7d
+              description: 'Descoberta de status de servicos de inicialzacao'
+              valuemap:
+                name: 'discovery systemd'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - enabled
+                    - '1'
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - static
+                    - '2'
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - disabled
+                    - '3'
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - indirect
+                    - '4'
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - generated
+                    - '5'
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - transient
+                    - '6'
+              tags:
+                -
+                  tag: service
+                  value: '{#SYSTEMDNAME}'
+      valuemaps:
+        -
+          uuid: b789e9a198b94e9c80d5ea64d28920b7
+          name: 'discovery systemd'
+          mappings:
+            -
+              value: '1'
+              newvalue: enabled
